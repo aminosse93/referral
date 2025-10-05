@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Référence - Mon App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        
+        .logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .code-display {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            letter-spacing: 2px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        
+        .btn-secondary {
+            background: #34495e;
+        }
+        
+        .store-badges {
+            margin-top: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .store-badge {
+            height: 50px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .store-badge:hover {
+            transform: scale(1.05);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            color: #e74c3c;
+            margin-top: 20px;
+            display: none;
+        }
+        
+        #status {
+            margin-top: 20px;
+            color: #27ae60;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🎮</div>
+        <h1>Rejoins-nous !</h1>
+        <p>Tu as été invité avec un code de parrainage. Télécharge l'app et gagne des bonus !</p>
+        
+        <div class="code-display" id="codeDisplay">
+            <span class="loading"></span>Chargement...
+        </div>
+        
+        <div id="status"></div>
+        <div class="error" id="error">Code de parrainage invalide</div>
+        
+        <a href="#" class="btn" id="openAppBtn" style="display:none;">
+            Ouvrir l'app
+        </a>
+        
+        <div class="store-badges">
+            <!-- Remplacez ces liens par vos vrais liens de store -->
+            <a href="https://play.google.com/store/apps/details?id=com.Dauof.BloxingWorld_Blox_World.com" target="_blank">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" 
+                     alt="Disponible sur Google Play" class="store-badge">
+            </a>
+            <a href="https://apps.apple.com/app/votre-app/id123456789" target="_blank">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" 
+                     alt="Télécharger sur App Store" class="store-badge">
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const APP_SCHEME = 'BloxyRbxWorld'; // Remplacez par votre scheme
+        const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.Dauof.BloxingWorld_Blox_World.com';
+        const APP_STORE_URL = 'https://apps.apple.com/app/votre-app/id123456789';
+        
+        // Extraire le code de parrainage de l'URL
+        function getReferralCode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('code');
+        }
+        
+        // Détecter le système d'exploitation
+        function getMobileOS() {
+            const ua = navigator.userAgent;
+            if (/android/i.test(ua)) return "Android";
+            if (/iPad|iPhone|iPod/.test(ua)) return "iOS";
+            return "Other";
+        }
+        
+        // Ouvrir l'app avec le deep link
+        function openApp(code) {
+            const deepLink = `${APP_SCHEME}://referral/${code}`;
+            const os = getMobileOS();
+            
+            document.getElementById('status').textContent = 'Ouverture de l\'application...';
+            
+            // Tenter d'ouvrir l'app
+            window.location.href = deepLink;
+            
+            // Après 2 secondes, rediriger vers le store si l'app n'est pas installée
+            setTimeout(() => {
+                if (os === 'Android') {
+                    window.location.href = PLAY_STORE_URL;
+                } else if (os === 'iOS') {
+                    window.location.href = APP_STORE_URL;
+                } else {
+                    document.getElementById('status').textContent = 
+                        'Veuillez télécharger l\'application depuis votre appareil mobile.';
+                }
+            }, 2000);
+        }
+        
+        // Initialisation
+        window.addEventListener('DOMContentLoaded', () => {
+            const code = getReferralCode();
+            const codeDisplay = document.getElementById('codeDisplay');
+            const openAppBtn = document.getElementById('openAppBtn');
+            const error = document.getElementById('error');
+            
+            if (code && code.length > 0) {
+                codeDisplay.textContent = code;
+                openAppBtn.style.display = 'inline-block';
+                
+                openAppBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    openApp(code);
+                });
+                
+                // Tentative automatique d'ouverture sur mobile
+                if (getMobileOS() !== 'Other') {
+                    setTimeout(() => {
+                        openApp(code);
+                    }, 1000);
+                }
+            } else {
+                codeDisplay.textContent = 'Code manquant';
+                error.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
