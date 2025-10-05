@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Référence - Mon App</title>
+    <title>Bloxing World - Parrainage</title>
     <style>
         * {
             margin: 0;
@@ -78,10 +78,6 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.2);
         }
         
-        .btn-secondary {
-            background: #34495e;
-        }
-        
         .store-badges {
             margin-top: 30px;
             display: flex;
@@ -127,16 +123,42 @@
             color: #27ae60;
             font-weight: bold;
         }
+
+        .reward-info {
+            background: #e8f5e9;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #4caf50;
+        }
+
+        .reward-info h3 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .reward-info p {
+            color: #1b5e20;
+            font-size: 14px;
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="logo">🎮</div>
-        <h1>Rejoins-nous !</h1>
-        <p>Tu as été invité avec un code de parrainage. Télécharge l'app et gagne des bonus !</p>
+        <h1>Rejoins Bloxing World !</h1>
+        <p>Tu as été invité avec un code de parrainage. Télécharge l'app et gagne des bonus automatiquement !</p>
         
         <div class="code-display" id="codeDisplay">
             <span class="loading"></span>Chargement...
+        </div>
+
+        <div class="reward-info">
+            <h3>🎁 Récompenses automatiques</h3>
+            <p>✨ Toi : <strong>+50 coins</strong></p>
+            <p>🤝 Ton ami : <strong>+25 coins</strong></p>
         </div>
         
         <div id="status"></div>
@@ -146,26 +168,21 @@
             Ouvrir l'app
         </a>
         
-        <div class="store-badges">
-            <!-- Remplacez ces liens par vos vrais liens de store -->
-            <a href="https://play.google.com/store/apps/details?id=com.Dauof.BloxingWorld_Blox_World.com" target="_blank">
+        <div class="store-badges" id="storeBadges" style="display:none;">
+            <a href="#" id="playStoreLink" target="_blank">
                 <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" 
                      alt="Disponible sur Google Play" class="store-badge">
-            </a>
-            <a href="https://apps.apple.com/app/votre-app/id123456789" target="_blank">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" 
-                     alt="Télécharger sur App Store" class="store-badge">
             </a>
         </div>
     </div>
 
     <script>
         // Configuration
-        const APP_SCHEME = 'BloxyRbxWorld'; // Remplacez par votre scheme
-        const PLAY_STORE_URL = 'https://play.google.com/store/apps/details?id=com.Dauof.BloxingWorld_Blox_World.com';
-        const APP_STORE_URL = 'https://apps.apple.com/app/votre-app/id123456789';
+        const APP_SCHEME = 'bloxingworld';
+        const PACKAGE_NAME = 'com.Dauof.BloxingWorld_Blox_World.com';
+        const BASE_PLAY_STORE_URL = 'https://play.google.com/store/apps/details';
         
-        // Extraire le code de parrainage de l'URL
+        // Extraire le code de parrainage
         function getReferralCode() {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get('code');
@@ -179,26 +196,25 @@
             return "Other";
         }
         
+        // Créer l'URL Play Store avec le referrer
+        function getPlayStoreUrlWithReferrer(code) {
+            return `${BASE_PLAY_STORE_URL}?id=${PACKAGE_NAME}&referrer=${encodeURIComponent(code)}`;
+        }
+        
         // Ouvrir l'app avec le deep link
         function openApp(code) {
             const deepLink = `${APP_SCHEME}://referral/${code}`;
-            const os = getMobileOS();
             
             document.getElementById('status').textContent = 'Ouverture de l\'application...';
+            console.log('Tentative d\'ouverture:', deepLink);
             
-            // Tenter d'ouvrir l'app
             window.location.href = deepLink;
             
-            // Après 2 secondes, rediriger vers le store si l'app n'est pas installée
+            // Si l'app ne s'ouvre pas, rediriger vers le Play Store avec le referrer
             setTimeout(() => {
-                if (os === 'Android') {
-                    window.location.href = PLAY_STORE_URL;
-                } else if (os === 'iOS') {
-                    window.location.href = APP_STORE_URL;
-                } else {
-                    document.getElementById('status').textContent = 
-                        'Veuillez télécharger l\'application depuis votre appareil mobile.';
-                }
+                const playStoreUrl = getPlayStoreUrlWithReferrer(code);
+                console.log('Redirection vers Play Store avec referrer:', playStoreUrl);
+                window.location.href = playStoreUrl;
             }, 2000);
         }
         
@@ -207,23 +223,58 @@
             const code = getReferralCode();
             const codeDisplay = document.getElementById('codeDisplay');
             const openAppBtn = document.getElementById('openAppBtn');
+            const storeBadges = document.getElementById('storeBadges');
+            const playStoreLink = document.getElementById('playStoreLink');
             const error = document.getElementById('error');
+            const os = getMobileOS();
+            
+            console.log('Code de parrainage:', code);
+            console.log('Système détecté:', os);
             
             if (code && code.length > 0) {
                 codeDisplay.textContent = code;
-                openAppBtn.style.display = 'inline-block';
                 
-                openAppBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    openApp(code);
-                });
-                
-                // Tentative automatique d'ouverture sur mobile
-                if (getMobileOS() !== 'Other') {
+                if (os === 'Android') {
+                    // Android : Configurer le lien Play Store avec referrer
+                    const playStoreUrl = getPlayStoreUrlWithReferrer(code);
+                    playStoreLink.href = playStoreUrl;
+                    
+                    openAppBtn.style.display = 'inline-block';
+                    storeBadges.style.display = 'flex';
+                    
+                    openAppBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        openApp(code);
+                    });
+                    
+                    // Tentative automatique d'ouverture
+                    document.getElementById('status').textContent = 
+                        'Ouverture automatique dans 1 seconde...';
+                    
                     setTimeout(() => {
                         openApp(code);
                     }, 1000);
+                    
+                } else if (os === 'iOS') {
+                    // iOS : Pas de Install Referrer API, utiliser le deep link classique
+                    codeDisplay.textContent = code + ' (Copié!)';
+                    
+                    // Copier dans le presse-papiers
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(code);
+                    }
+                    
+                    document.getElementById('status').textContent = 
+                        'Code copié ! Collez-le dans l\'app après installation.';
+                    
+                } else {
+                    // Desktop
+                    document.getElementById('status').textContent = 
+                        'Scannez ce QR code depuis votre téléphone ou utilisez le lien.';
+                    storeBadges.style.display = 'flex';
+                    playStoreLink.href = getPlayStoreUrlWithReferrer(code);
                 }
+                
             } else {
                 codeDisplay.textContent = 'Code manquant';
                 error.style.display = 'block';
